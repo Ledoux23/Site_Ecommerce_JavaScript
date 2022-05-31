@@ -1,48 +1,90 @@
-//Catch data I need from the api.
-fetch("http://localhost:3000/api/products")
+// Retrieve product id from url.
+const queryStringId = window.location.search;
+const searchParams = new URLSearchParams(queryStringId);
+const targetId = searchParams.get("id");   
+
+let productData = [];
+
+// Retrieve details of the product whose id is in the url of the current page.
+const fetchProduct = async () => {
+  await fetch(`http://localhost:3000/api/products/${targetId}`)
   .then(function(res) {
-    if (res.ok) {
-      return res.json();
-    }
+      if (res.ok) {
+        return res.json();
+      }
   })
-//Using a URLSearchParams object in a for...of structure to display the selected product.  
-  .then(function(data) {
-    const queryStringId = window.location.search;
-    const searchParams = new URLSearchParams(queryStringId);
-    const targetId = searchParams.get("id");   
+  .then(function(dataPromise) {
+    productData = dataPromise;
+  })   
+};
 
-    for (let product of data) {
-  
-        if(targetId === product._id) {
-            
-            const productTarget = document.querySelector(".item__img");
-            let imageProduct = document.createElement("img");
-            imageProduct.src = product.imageUrl;
-            imageProduct.alt = product.altTxt;
-            productTarget.appendChild(imageProduct);
+// To display the product in the product page.
+const displayProduct = async () => {
+  await fetchProduct();       
+    const productTarget = document.querySelector(".item__img");
+    let imageProduct = document.createElement("img");
+    imageProduct.src = productData.imageUrl;
+    imageProduct.alt = productData.altTxt;
+    productTarget.appendChild(imageProduct);
 
-            let productName = document.getElementById("title");
-            productName.textContent = product.name;
+    let productName = document.getElementById("title");
+    productName.textContent = productData.name;
 
-            let productPrice = document.getElementById("price");
-            productPrice.textContent = product.price;   
-            
-            let productDescription = document.getElementById("description");
-            productDescription.textContent = product.description;
-            
-            let selectProductColors = document.getElementById("colors");
-            let allProductColors = product.colors;         
-// Using the for...of loop to dynamically embed color options.
-            for(let productColor of allProductColors) {   
-              let optionColorSelected = document.createElement("option");
-              selectProductColors.appendChild(optionColorSelected);
-              optionColorSelected.textContent = `${productColor}`;
-              optionColorSelected.value = `${productColor}`;
-            }
-        } 
+    let productPrice = document.getElementById("price");
+    productPrice.textContent = productData.price;   
+    
+    let productDescription = document.getElementById("description");
+    productDescription.textContent = productData.description;
+    
+    let selectProductColors = document.getElementById("colors");
+    let ProductColors = productData.colors;         
+    // Using the for...of loop to dynamically embed color options.
+    for(let productColor of ProductColors) {   
+      let optionColorSelected = document.createElement("option");
+      selectProductColors.appendChild(optionColorSelected);
+      optionColorSelected.textContent = `${productColor}`;
+      optionColorSelected.value = `${productColor}`;
     }
-  })
+}
+displayProduct();
 
-  .catch(function(err) {
-    // An error occured
-  });
+// Save items into local storage.
+function saveCart(cart) {
+  localStorage.setItem("cart", JSON.stringify(cart));
+}
+
+// Check and recover cart/items from local storage. The value is null if there is not item.
+function getCart() {
+  let cart = localStorage.getItem("cart");
+  if(cart == null) {
+    return [];
+  } else {
+    return JSON.parse(cart);
+  }
+}
+
+// To add items and change quantity to the cart.
+function addProduct() {
+  let selectColor = document.getElementById("colors");
+  let selectQuantity = document.getElementById("quantity");                            
+  let product = { 
+    color : `${selectColor.value}`,
+    quantity : `${selectQuantity.value}`,
+    id : targetId,
+  };
+  let cart = getCart();
+  let foundProduct = cart.find(p => p.id == product.id && p.color == product.color)
+  if(foundProduct != undefined) {
+    let productQuantity = parseInt(foundProduct.quantity) + parseInt(product.quantity);
+    foundProduct.quantity = productQuantity;
+  } else {
+    cart.push(product);
+  }
+  saveCart(cart);
+}
+
+// An addEventListener event function to add and save elements to the local storage.           
+const buttonToCart = document.getElementById("addToCart"); 
+addToCart.addEventListener("click", () => {
+  addProduct();
+})
