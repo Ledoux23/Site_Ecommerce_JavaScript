@@ -1,7 +1,9 @@
 // This snippet sends an HTTP GET request to the web service located at http://localhost:3000/api/products.
 /* Call of the then() function to retrieve the result of the query in json format, having previously checked that the query went
  well with res.ok. This json result being also a Promise, we return it and retrieve its true value in the following then() function.*/
-fetch("http://localhost:3000/api/products")
+const displayProducts = async () => {
+
+    await fetch("http://localhost:3000/api/products")
 
     .then(function(res) {
         if(res.ok) {
@@ -44,5 +46,7 @@ fetch("http://localhost:3000/api/products")
     })
 
     .catch(function(err) {
-        console.log("Une erreur est survenue :" + err);
+        alert("Une erreur est survenue :" + err);
     });
+};
+displayProducts();

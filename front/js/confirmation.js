@@ -1,4 +1,4 @@
-// Retrieve product id from url.
+// Get product id from url.
 const queryStringId = window.location.search;
 const searchParams = new URLSearchParams(queryStringId);
 const confirmationId = searchParams.get("id"); 

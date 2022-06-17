@@ -1,15 +1,12 @@
-// Get cart from local storage.
+// Get cart of products from local storage.
 let getCart = JSON.parse(localStorage.getItem("cart"));
-let price;
-let imageUrl;
-let altTxt;
-let heading;
+let price, imageUrl, altTxt, heading;     // Simplified syntax for creating variables (with null value).
 let cartDetails = [];
 
 // Get data from API to complete product details to display.
 const fetchCart = async () => {
     if(getCart == null) {
-        alert("Merci d'ajouter au moins un produit dans le panier !");  // Message d'alerte en cas de panier vide.
+        alert("Merci d'ajouter au moins un produit dans le panier !");
     } else {
         for(let product of getCart) {
             await fetch(`http://localhost:3000/api/products/${product.id}`)
@@ -18,22 +15,22 @@ const fetchCart = async () => {
                     return res.json();
                 }
             })
-            .then(function(data) {             // récupère les valeurs dans les variables déclarées plus haut;    
+            .then(function(data) {             // Retrieves values ​​in the variables declared above;    
                 price = data.price;
                 imageUrl = data.imageUrl;
                 altTxt = data.altTxt;
                 heading = data.name;
             })
-            product.price = price;          // modification de l'objet avec l'ajout de nouveaux éléments (nomObjet.cléElt = valeurElt).
+            product.price = price;          // Modification of the object with addition of new elements (objectName.keyElt = valueElt).
             product.imageUrl = imageUrl;
             product.altTxt = altTxt;
             product.name = heading;
-            cartDetails.push(product);      // on push le résultat dans le tableau vide créé au début.
+            cartDetails.push(product);      // Push the result into the empty array created at the beginning.
         } 
     };
 };
 
-// Display of products in the cart.
+// Display of products present in the cart.
 const displayProducts = async () => {
 
     await fetchCart();
@@ -98,15 +95,20 @@ const displayProducts = async () => {
         productInput.setAttribute("max", "100");
         productItemQuantity.appendChild(productInput);
         // Modify the quantity of products.
-        productInput.addEventListener("change", () => {      // PB : possibilité de saisir des chiffres en dehors de 0 à 100, y compris les négatifs !  
-            quantities.textContent = productInput.value;        // récupère la valeur saisie dans la valeur affichée.
-            product.quantity = productInput.value;          // affecte la valeur saisie à la quantité pour l'actualiser.
-            for(let p of getCart) {         // Enregistrer la quantitté modifiée dans le local storage.
-                if(product.id === p.id && product.color === p.color) {
-                    p.quantity = product.quantity;                      // Remplace la quantité du produit dans le local storage par la nouvelle quantité saisie.
-                }                                                       // PB, le prix est également stocké dans le local storage (est-ce normal) ?
+        productInput.addEventListener("change", () => {    
+            if(productInput.value <= 0 || productInput.value > 100) { // Don't allow numbers outside the range 1-100.
+                alert("Saissez un chiffre compris entre 1 et 100 !")
+            } else if(productInput.value >= 1 || productInput.value <= 100) {
+                quantities.textContent = productInput.value;  // Get entered value into displayed value.
+                product.quantity = productInput.value;   // Assign the entered value to the quantity to update it.
+                for(let p of getCart) {         
+                    if(product.id === p.id && product.color === p.color) {
+                        p.quantity = product.quantity;  // Replace quantity of product in the local storage with new quantity entered.
+                    }
+                }
             }
-            saveCart();  
+            saveCart();     // Save new quantity to local storage.
+            location.reload();
         });      
         
         let deleteItemProduct = document.createElement("div");
@@ -117,19 +119,16 @@ const displayProducts = async () => {
         deleteItemProduct.appendChild(deleteProduct);
         deleteProduct.textContent = "Supprimer";
         // Deleting products from the cart.
-        let newCart = 0;                                    // Variable pour récupérer la nouvelle valeur du panier après suppression d'un élément.
+        let newCart = 0;           
         deleteProduct.addEventListener("click", () => {  
             for(let p of getCart) {  
-                if(product.id === p.id) {                                   // Pour distinguer les produits ayant le même ID mais de couleurs différentes.
+                if(product.id === p.id) {                // Distinguish between products with the same ID but different colors.
                     newCart = getCart.filter(p => p.color !== product.color);  
-                    getCart = newCart;          // On affecte la nouvelle valeur du panier affiché à celui du local storage.          
+                    getCart = newCart;          // Assigns the new value of the displayed cart to that of the local storage.         
                 }
             }
-            // getCart.filter(p =>  p.id !== product.id && p.color !== product.color);      // Problème : au clic sur l'élément, tous les autres du même ID 
-            //     console.log(getCart);                                                    // sont supprimés, même quand ils sont de couleurs différentes.
-            // getCart = newCart;          
-            //     console.log(newCart);
-            saveCart();                   
+            saveCart();
+            location.reload();               
         })
     }
 };
@@ -162,30 +161,30 @@ function saveCart() {
     localStorage.setItem("cart", JSON.stringify(getCart));
 }; 
 
-// Verification of compliance of user data.
-const firstName = document.getElementById("firstName");     // Récupère les différents champs d'input.
+// Retrieves various input fields to verify user data compliance.
+const firstName = document.getElementById("firstName");
 const lastName = document.getElementById("lastName");
 const address = document.getElementById("address");
 const city = document.getElementById("city");
 const email = document.getElementById("email");
-let valueFirstName, valueLastName, valueAddress, valueCity, valueEmail; // Syntaxe simplifiée pour créer 5 variables(à valeur null à ce stade). 
+let valueFirstName, valueLastName, valueAddress, valueCity, valueEmail; 
 
 // Retrieve and analyze the first name entered by the user in the form. Display an error message if necessary.
 firstName.addEventListener("input", function(e) {
     valueFirstName;
-    if(e.target.value.length == 0) { // la méthode target permet de cibler l'élément sur lequel l'évènement se produit.
-        firstNameErrorMsg.innerHTML = ""; // On laisse vide parce que ce n'est pas encore une erreur.
-        valueFirstName = null;            // S'assure que la valeur est null et qu'aucune donnée n'est conservée dans l'input.             
-    } else if (e.target.value.length < 2 || e.target.value.length > 30) { // Vérifie s'il y a quand-même une valeur se trouvant hors de l'intervalle du nombre de caractères fixé dans la condition (3-25).
-        firstNameErrorMsg.innerHTML = "Prénom doit contenir entre 2 et 30 caractères !"; // Message d'erreur 1.
-        valueFirstName = null;                      // Notre RegExp est passé en paramètre à la méthode "match" de l'objet string.
-    }                                              // ReGexp: prend les lettres miniscule et majiscule, l'espace, 2 à 30 caractères. Petit chapeau au début pour indiquer que ca commence ici.
-    if(e.target.value.match(/^[a-z A-Z]{2,30}$/)) {   // Si ca match avec cette ReGexp, exécuter ce code.
-        firstNameErrorMsg.innerHTML = ""; // Il n'y a pas d'erreur, c'est donc ce qu'on veut. Aussi cette façon d'utiliser l'ID et innerHTML fonctionne tout comme document.getElementById.
-        valueFirstName = e.target.value;    // Puisque c'est l'effet recherchée, on récupère la valeur de l'input dans la variable.
+    if(e.target.value.length == 0) { 
+        firstNameErrorMsg.innerHTML = ""; 
+        valueFirstName = null;                        
+    } else if (e.target.value.length < 2 || e.target.value.length > 30) {
+        firstNameErrorMsg.innerHTML = "Prénom doit contenir entre 2 et 30 caractères !";
+        valueFirstName = null;                     
+    }                                              
+    if(e.target.value.match(/^[a-z A-Z]{2,30}$/)) {
+        firstNameErrorMsg.innerHTML = ""; 
+        valueFirstName = e.target.value;
     }
-    if(!e.target.value.match(/^[a-z A-Z]{2,30}$/) && e.target.value.length >= 2 && e.target.value.length <= 30) { // "!" = différent de, donc ne doit pas matcher avec e.target.value.match(/^[a-z A-Z]{3,25}$/). 
-        firstNameErrorMsg.innerHTML = "Prénom n'admet pas de caractère spécial, d'accent ou de chiffre !"; // Message d'erreur 2. 
+    if(!e.target.value.match(/^[a-z A-Z]{2,30}$/) && e.target.value.length >= 2 && e.target.value.length <= 30) { 
+        firstNameErrorMsg.innerHTML = "Prénom n'admet pas de caractère spécial, d'accent ou de chiffre !"; 
         valueFirstName = null;
     }
 });
@@ -197,15 +196,15 @@ lastName.addEventListener("input", function(e) {
         lastNameErrorMsg.innerHTML = ""; 
         valueLastName = null;                         
     } else if (e.target.value.length < 2 || e.target.value.length > 30) { 
-        lastNameErrorMsg.innerHTML = "Nom doit contenir entre 2 et 30 caractères !"; // Message d'erreur 1.
+        lastNameErrorMsg.innerHTML = "Nom doit contenir entre 2 et 30 caractères !"; 
         valueLastName = null;
     }                                              
-    if(e.target.value.match(/^[a-z A-Z]{2,30}$/)) {   // Si ca match avec cette ReGexp, exécuter ce code.
-        lastNameErrorMsg.innerHTML = "";    // Pas d'erreur, c'est ce qu'on veut.
+    if(e.target.value.match(/^[a-z A-Z]{2,30}$/)) {
+        lastNameErrorMsg.innerHTML = "";   
         valueLastName = e.target.value;
     }
     if(!e.target.value.match(/^[a-z A-Z]{2,30}$/) && e.target.value.length >= 2 && e.target.value.length <= 30) { 
-        lastNameErrorMsg.innerHTML = "Nom n'admet pas de caractère spécial, d'accent ou de chiffre !"; // Message d'erreur 2. 
+        lastNameErrorMsg.innerHTML = "Nom n'admet pas de caractère spécial, d'accent ou de chiffre !"; 
         valueLastName = null;
     }
 });
@@ -220,7 +219,7 @@ address.addEventListener("input", function(e) {
         addressErrorMsg.innerHTML = "Adresse doit contenir entre 3 et 30 caractères !";
         valueAddress = null;
     }                                              
-    if(e.target.value.match(/^[0-9]{1,3} [a-z A-Z]{3,30}$/)) { // On commence par un à 3 chiffres, suivi d'un espace avant l'alphabet.
+    if(e.target.value.match(/^[0-9]{1,3} [a-z A-Z]{3,30}$/)) {
         addressErrorMsg.innerHTML = "";
         valueAddress = e.target.value;
     }
@@ -240,7 +239,7 @@ city.addEventListener("input", function(e) {
         cityErrorMsg.innerHTML = "Ville doit contenir entre 3 et 25 caractères !";
         valueCity = null;
     }                                              
-    if(e.target.value.match(/^[a-z A-Z]{3,25}$/)) { // On commence par un à 3 chiffres, suivi d'un espace avant l'alphabet.
+    if(e.target.value.match(/^[a-z A-Z]{3,25}$/)) {
         cityErrorMsg.innerHTML = "";
         valueCity = e.target.value;
     }
@@ -254,13 +253,13 @@ city.addEventListener("input", function(e) {
 email.addEventListener("input", function(e) {
     valueEmail;
     if(e.target.value.length == 0) {  
-        emailErrorMsg.innerHTML = "";                                       // Dans cette ReGex "w" est comme "word", c'est un mot.
-        valueEmail = null;                                               // marche avec tout ce qu'il y a entre 2 et 4 lettres à la fin (.fr,.cm,.com, ...)                   
-    } else if(e.target.value.match(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)) { // Comprendre et décrire cette RegEx pour pouvoir l'expliquer.
-        emailErrorMsg.innerHTML = "";   // On est dans la bonne condition et
-        valueEmail = e.target.value;    // on injecte la valeur dans la variable.
+        emailErrorMsg.innerHTML = "";
+        valueEmail = null;                                                                  
+    } else if(e.target.value.match(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)) {
+        emailErrorMsg.innerHTML = ""; 
+        valueEmail = e.target.value; 
     }
-    if(!e.target.value.match(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/) && !e.target.value.length == 0) { // Si différent de notre condition et le nombre de caractères différent de zéro.
+    if(!e.target.value.match(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/) && !e.target.value.length == 0) {
         emailErrorMsg.innerHTML = "Email saisi incorrect ! Ex : masociete@yahoo.fr";
         valueEmail = null;
     }
@@ -269,49 +268,52 @@ email.addEventListener("input", function(e) {
 // An addEventListener to save and send data to the server.
 const sendOrder = document.getElementById("order");
 sendOrder.addEventListener("click", (e) => {
-    e.preventDefault();    
-    // Récupère dans un array les ID des produits enregistrés dans local storage.
-    const productsId = [];
-    let saveProducts = JSON.parse(localStorage.getItem("cart"));
-    for(let product of saveProducts) {
-        productsId.push(product.id);
-    }
-    // Création d'un objet order (contenant l'objet contact et le tableau productsId) à envoyer au serveur.
-    const order = {
-        contact : {
-            firstName: valueFirstName,
-            lastName: valueLastName,
-            address: valueAddress,
-            city: valueCity,
-            email: valueEmail
-        },
-        products: productsId
+    e.preventDefault(); 
+    if(getCart == null || getCart == 0 || cartDetails == []) {   // Check if there are products in the basket before order validation.
+        alert("Merci d'ajouter au moins un produit dans le panier !");
+    } else {   
+        const productsId = [];      // Retrieve in an array the IDs of products saved in local storage.
+        let saveProducts = JSON.parse(localStorage.getItem("cart"));
+        for(let product of saveProducts) {
+            productsId.push(product.id);
+        }
+        // Create an order object (containing contact object and productsId array) to send to the server.
+        const order = {
+            contact : {
+                firstName: valueFirstName,
+                lastName: valueLastName,
+                address: valueAddress,
+                city: valueCity,
+                email: valueEmail
+            },
+            products: productsId
+        };
+        
+        // API request with POST method and order object.
+        fetch("http://localhost:3000/api/products/order", {
+            method: "POST",    
+            headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(order),
+        })
+        .then(function(res) {
+            if (res.ok) {
+                return res.json();
+            }
+        })
+        .then(function(data) {
+            if(data !== undefined) {
+                localStorage.clear();  
+                // document.location.href retrieves url of current page and assigns it that of the confirmation page + orderId returned by the server.                        
+                document.location.href = "./confirmation.html?id=" + data.orderId; 
+            } else {                                                                
+                alert("Bien vouloir compléter tout d'abord le formulaire !")
+            }
+        })
+        .catch(function(err) {
+            alert("Une erreur est survenue :" +" "+ err);
+        });
     };
-    
-    // Requête de l'API avec la méthode POST et l'objet order.
-    fetch("http://localhost:3000/api/products/order", {
-        method: "POST",    
-        headers: {
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(order),
-    })
-    .then(function(res) {
-        if (res.ok) {
-            return res.json();
-        }
-    })
-    .then(function(data) {
-        if(data !== undefined) {
-            localStorage.clear();   // Vide le local storage pour ne rien y conserver.                                  
-            document.location.href = "./confirmation.html?id=" + data.orderId;  // document.location.href récupère l'url de la page et lui affecte
-        } else {                                                                // celle de la page confirmation + orderId renvoyé par le serveur.
-            alert("Bien vouloir compléter tout d'abord le formulaire !")
-        }
-    })
-    .catch(function(err) {
-        console.log(err);
-        alert("Une erreur est survenue :" +" "+ err);
-    });
 });
