@@ -6,3 +6,5 @@ const confirmationId = searchParams.get("id");
 // Display the order number.
 const orderConfirmation = document.getElementById("orderId");
 orderConfirmation.textContent = confirmationId;
+
+alert("Commande finalisée avec succès !")

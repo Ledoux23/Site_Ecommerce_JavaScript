@@ -93,23 +93,7 @@ const displayProducts = async () => {
         productInput.setAttribute("value", `${productInput.value}`);
         productInput.setAttribute("min", "1");
         productInput.setAttribute("max", "100");
-        productItemQuantity.appendChild(productInput);
-        // Modify the quantity of products.
-        productInput.addEventListener("change", () => {    
-            if(productInput.value <= 0 || productInput.value > 100) { // Don't allow numbers outside the range 1-100.
-                alert("Saissez un chiffre compris entre 1 et 100 !")
-            } else if(productInput.value >= 1 || productInput.value <= 100) {
-                quantities.textContent = productInput.value;  // Get entered value into displayed value.
-                product.quantity = productInput.value;   // Assign the entered value to the quantity to update it.
-                for(let p of getCart) {         
-                    if(product.id === p.id && product.color === p.color) {
-                        p.quantity = product.quantity;  // Replace quantity of product in the local storage with new quantity entered.
-                    }
-                }
-            }
-            saveCart();     // Save new quantity to local storage.
-            location.reload();
-        });      
+        productItemQuantity.appendChild(productInput);    
         
         let deleteItemProduct = document.createElement("div");
         deleteItemProduct.classList.add("cart__item__content__settings__delete");
@@ -117,20 +101,11 @@ const displayProducts = async () => {
     
         let deleteProduct = document.createElement("p");  
         deleteItemProduct.appendChild(deleteProduct);
+        deleteProduct.classList.add("deleteItem");
         deleteProduct.textContent = "Supprimer";
-        // Deleting products from the cart.
-        let newCart = 0;           
-        deleteProduct.addEventListener("click", () => {  
-            for(let p of getCart) {  
-                if(product.id === p.id) {                // Distinguish between products with the same ID but different colors.
-                    newCart = getCart.filter(p => p.color !== product.color);  
-                    getCart = newCart;          // Assigns the new value of the displayed cart to that of the local storage.         
-                }
-            }
-            saveCart();
-            location.reload();               
-        })
-    }
+    };
+    modifyQuantity();
+    deleteProduct();
 };
 
 // Calculation of the total number of products.
@@ -155,6 +130,61 @@ const totalPrice = async () => {
     getTotalPrice.textContent = total;
 };
 totalPrice();
+
+// Modify the quantity of products.
+function modifyQuantity() {
+
+    let newQuantity = document.querySelectorAll(".itemQuantity");
+
+    for (let i = 0; i < newQuantity.length; i++){
+        newQuantity[i].addEventListener("change", (e) => {  //Select element to modify according to its id and its color.
+            e.preventDefault();
+            if(newQuantity[i].value <= 0 || newQuantity[i].value > 100) { // Don't allow numbers outside the range 1-100.
+                alert("Saissez un chiffre compris entre 1 et 100 !")
+            } else if(newQuantity[i].value >= 1 || newQuantity[i].value <= 100) {
+                // let displayQuantity = getCart[i].quantity; 
+                let productColor = getCart[i].color;
+                let productId = getCart[i].id;
+                let newQuantityValue = newQuantity[i].valueAsNumber;
+                const foundProduct = getCart.find(p => p.color == productColor && p.id == productId);
+                foundProduct.quantity = newQuantityValue; // It is assigned the value of the new quantity.
+                getCart[i].quantity = foundProduct.quantity; // The value of the new quantity entered is assigned to the displayed quantity.
+                // Hide some items like price to avoid keeping them in local storage.
+                for(let product of getCart) {
+                    delete product.price;
+                    delete product.imageUrl;
+                    delete product.altTxt;
+                    delete product.heading;
+                };
+            };
+            saveCart();
+            location.reload();
+        });
+    }; 
+};
+
+// Deleting products from the cart.
+function deleteProduct() {
+    let deleteButton = document.querySelectorAll(".deleteItem");
+    for (let j = 0; j < deleteButton.length; j++){
+        deleteButton[j].addEventListener("click", (e) => { //Select element to delete according to its id and its color.
+            e.preventDefault();            
+            let idToDelete = getCart[j].id;
+            let colorToDelete = getCart[j].color;
+            getCart = getCart.filter(p => p.id !== idToDelete || p.color !== colorToDelete);
+            // Hide some items like price to avoid keeping them in local storage.
+            for(let product of getCart) {
+                delete product.price;
+                delete product.imageUrl;
+                delete product.altTxt;
+                delete product.heading;
+            };
+            saveCart();
+            alert("Produit supprimé du panier !");
+            location.reload();
+        })
+    }
+};
 
 // Save items with new quantities into local storage.
 function saveCart() {
