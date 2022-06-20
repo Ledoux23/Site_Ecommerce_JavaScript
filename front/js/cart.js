@@ -146,9 +146,10 @@ function modifyQuantity() {
                 let productColor = getCart[i].color;
                 let productId = getCart[i].id;
                 let newQuantityValue = newQuantity[i].valueAsNumber;
+                let displayQuantity = newQuantity[i].previousElementSibling;
                 const foundProduct = getCart.find(p => p.color == productColor && p.id == productId);
-                foundProduct.quantity = newQuantityValue; // It is assigned the value of the new quantity.
-                getCart[i].quantity = foundProduct.quantity; // The value of the new quantity entered is assigned to the displayed quantity.
+                foundProduct.quantity = newQuantityValue; // The value of the new quantity is assigned to the one in the local storage.
+                displayQuantity.textContent = newQuantityValue; // The value of the new quantity entered is assigned to the displayed quantity.
                 // Hide some items like price to avoid keeping them in local storage.
                 for(let product of getCart) {
                     delete product.price;
@@ -158,7 +159,6 @@ function modifyQuantity() {
                 };
             };
             saveCart();
-            location.reload();
         });
     }; 
 };
