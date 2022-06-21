@@ -133,10 +133,21 @@ totalPrice();
 
 // Modify the quantity of products.
 function modifyQuantity() {
-
+    
     let newQuantity = document.querySelectorAll(".itemQuantity");
 
     for (let i = 0; i < newQuantity.length; i++){
+
+        newQuantity[i].addEventListener("mouseenter", (e) => { // Get the displayed quantity value to increment or decrement.
+            e.preventDefault();
+            newQuantity[i].value = newQuantity[i].previousElementSibling.textContent;
+        });
+
+        newQuantity[i].addEventListener("mouseout", (e) => { // Keep null until the element is hovered over by a pointing device (a mouse for example).
+            e.preventDefault();
+            newQuantity[i].value = null;
+        });
+
         newQuantity[i].addEventListener("change", (e) => {  //Select element to modify according to its id and its color.
             e.preventDefault();
             if(newQuantity[i].value <= 0 || newQuantity[i].value > 100) { // Don't allow numbers outside the range 1-100.
