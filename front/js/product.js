@@ -95,5 +95,8 @@ function addProduct() {
 const buttonToCart = document.getElementById("addToCart"); 
 addToCart.addEventListener("click", () => {
   addProduct();
-  location.reload();
+  let selectColor = document.getElementById("colors");
+  let selectQuantity = document.getElementById("quantity");
+  selectColor.value = "";
+  selectQuantity.value = 0;
 });

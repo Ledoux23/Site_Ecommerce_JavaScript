@@ -1,133 +1,125 @@
 // Get cart of products from local storage.
 let getCart = JSON.parse(localStorage.getItem("cart"));
-let price, imageUrl, altTxt, heading;     // Simplified syntax for creating variables (with null value).
-let cartDetails = [];
 
-// Get data from API to complete product details to display.
-const fetchCart = async () => {
+// Display of products present in the cart.
+function displayProducts() {
+
+    let displayCart = document.getElementById("cart__items");
+
+    // Get data from API to complete product details to display.
     if(getCart == null) {
         alert("Merci d'ajouter au moins un produit dans le panier !");
     } else {
         for(let product of getCart) {
-            await fetch(`http://localhost:3000/api/products/${product.id}`)
+            fetch(`http://localhost:3000/api/products/${product.id}`)
             .then(function(res) {
                 if (res.ok) {
                     return res.json();
                 }
             })
-            .then(function(data) {             // Retrieves values ​​in the variables declared above;    
-                price = data.price;
-                imageUrl = data.imageUrl;
-                altTxt = data.altTxt;
-                heading = data.name;
-            })
-            product.price = price;          // Modification of the object with addition of new elements (objectName.keyElt = valueElt).
-            product.imageUrl = imageUrl;
-            product.altTxt = altTxt;
-            product.name = heading;
-            cartDetails.push(product);      // Push the result into the empty array created at the beginning.
-        } 
-    };
-};
+            .then(function(productApi) {    
 
-// Display of products present in the cart.
-const displayProducts = async () => {
+                let productDisplay = document.createElement("article");
+                productDisplay.classList.add("cart__item");
+                productDisplay.setAttribute("data-id",`${product.id}`);
+                productDisplay.setAttribute("data-color",`${product.color}`);
+                displayCart.appendChild(productDisplay); 
+                    
+                let productItemImage = document.createElement("div");
+                productItemImage.classList.add("cart__item__img");
+                productDisplay.appendChild(productItemImage);
 
-    await fetchCart();
-    
-    let displayCart = document.getElementById("cart__items");   // Get the cart display tag from the DOM.
+                let productImage = document.createElement("img");
+                productImage.src = `${productApi.imageUrl}`; 
+                productImage.alt = `${productApi.altTxt}`;     
+                productItemImage.appendChild(productImage);
 
-    for(let product of cartDetails) {  
-
-        let productDisplay = document.createElement("article");
-        productDisplay.classList.add("cart__item");
-        productDisplay.setAttribute("data-id",`${product.id}`);
-        productDisplay.setAttribute("data-color",`${product.color}`);
-        displayCart.appendChild(productDisplay); 
+                let productItemContent = document.createElement("div");
+                productItemContent.classList.add("cart__item__content");
+                productDisplay.appendChild(productItemContent);
             
-        let productItemImage = document.createElement("div");
-        productItemImage.classList.add("cart__item__img");
-        productDisplay.appendChild(productItemImage);
+                let productItemDescription = document.createElement("div");
+                productItemDescription.classList.add("cart__item__content__description");
+                productItemContent.appendChild(productItemDescription);
+            
+                let productName = document.createElement("h2");
+                productItemDescription.appendChild(productName);
+                productName.textContent = `${productApi.name}`;  
+            
+                let productColor = document.createElement("p");
+                productItemDescription.appendChild(productColor);
+                productColor.textContent = `${product.color}`;   
+            
+                let productPrice = document.createElement("p");
+                productItemDescription.appendChild(productPrice);
+                productPrice.textContent = `${productApi.price} €`;  
 
-        let productImage = document.createElement("img");
-        productImage.src = `${product.imageUrl}`; 
-        productImage.alt = `${product.altTxt}`;     
-        productItemImage.appendChild(productImage);
+                let productItemSettings = document.createElement("div");
+                productItemSettings.classList.add("cart__item__content__settings");
+                productItemContent.appendChild(productItemSettings);
 
-        let productItemContent = document.createElement("div");
-        productItemContent.classList.add("cart__item__content");
-        productDisplay.appendChild(productItemContent);
-    
-        let productItemDescription = document.createElement("div");
-        productItemDescription.classList.add("cart__item__content__description");
-        productItemContent.appendChild(productItemDescription);
-    
-        let productName = document.createElement("h2");
-        productItemDescription.appendChild(productName);
-        productName.textContent = `${product.name}`;  
-    
-        let productColor = document.createElement("p");
-        productItemDescription.appendChild(productColor);
-        productColor.textContent = `${product.color}`;   
-    
-        let productPrice = document.createElement("p");
-        productItemDescription.appendChild(productPrice);
-        productPrice.textContent = `${product.price} €`;  
+                let productItemQuantity = document.createElement("div");
+                productItemQuantity.classList.add("cart__item__content__settings__quantity");
+                productItemSettings.appendChild(productItemQuantity);
+            
+                let quantities = document.createElement("p");
+                productItemQuantity.appendChild(quantities);
+                quantities.textContent = `${product.quantity}`;
+            
+                let productInput = document.createElement("input");      
+                productInput.classList.add("itemQuantity");  
+                productInput.setAttribute("type", "number");
+                productInput.setAttribute("name", "itemQuantity");
+                productInput.setAttribute("value", `${productInput.value}`);
+                productInput.setAttribute("min", "1");
+                productInput.setAttribute("max", "100");
+                productItemQuantity.appendChild(productInput);    
+                
+                let deleteItemProduct = document.createElement("div");
+                deleteItemProduct.classList.add("cart__item__content__settings__delete");
+                productItemSettings.appendChild(deleteItemProduct);
+            
+                let deleteProduct = document.createElement("p");  
+                deleteItemProduct.appendChild(deleteProduct);
+                deleteProduct.classList.add("deleteItem");
+                deleteProduct.textContent = "Supprimer";
 
-        let productItemSettings = document.createElement("div");
-        productItemSettings.classList.add("cart__item__content__settings");
-        productItemContent.appendChild(productItemSettings);
-
-        let productItemQuantity = document.createElement("div");
-        productItemQuantity.classList.add("cart__item__content__settings__quantity");
-        productItemSettings.appendChild(productItemQuantity);
-    
-        let quantities = document.createElement("p");
-        productItemQuantity.appendChild(quantities);
-        quantities.textContent = `${product.quantity}`;
-    
-        let productInput = document.createElement("input");      
-        productInput.classList.add("itemQuantity");  
-        productInput.setAttribute("type", "number");
-        productInput.setAttribute("name", "itemQuantity");
-        productInput.setAttribute("value", `${productInput.value}`);
-        productInput.setAttribute("min", "1");
-        productInput.setAttribute("max", "100");
-        productItemQuantity.appendChild(productInput);    
-        
-        let deleteItemProduct = document.createElement("div");
-        deleteItemProduct.classList.add("cart__item__content__settings__delete");
-        productItemSettings.appendChild(deleteItemProduct);
-    
-        let deleteProduct = document.createElement("p");  
-        deleteItemProduct.appendChild(deleteProduct);
-        deleteProduct.classList.add("deleteItem");
-        deleteProduct.textContent = "Supprimer";
+                modifyQuantity();
+                removeProduct();
+            });
+        }; 
     };
-    modifyQuantity();
-    deleteProduct();
 };
+displayProducts();
 
 // Calculation of the total number of products.
-const totalQuantity = async () => {
-    await displayProducts();
-    let totalNumber = document.getElementById("totalQuantity");
-    let number = 0;
-    for(let product of cartDetails) {
-      number += parseInt(product.quantity);
+function totalQuantity() {
+    let totalQuantity = document.getElementById("totalQuantity");
+    let displayQuantity = 0;
+    for(let product of getCart) {
+        displayQuantity += parseInt(product.quantity);
     }
-    totalNumber.textContent = number;
+    totalQuantity.textContent = displayQuantity;
 };
+totalQuantity();
 
 // Calculation of the total price of the products.
-const totalPrice = async () => {
-    await totalQuantity();
-    let getTotalPrice = document.getElementById("totalPrice");
-    let total = 0;
-    for(let product of cartDetails) {
-      total += product.quantity * product.price;
+function totalPrice() {
+
+    let totalPrice = document.getElementById("totalPrice");
+    let displayAmount = 0;
+    for(let product of getCart) {
+        fetch(`http://localhost:3000/api/products/${product.id}`)
+        .then(function(res) {
+            if (res.ok) {
+                return res.json();
+            }
+        })
+        .then(function(productApi) { 
+            displayAmount  += product.quantity * productApi.price;
+            totalPrice.textContent = displayAmount;
+        })
     }
-    getTotalPrice.textContent = total;
 };
 totalPrice();
 
@@ -135,7 +127,7 @@ totalPrice();
 function modifyQuantity() {
     
     let newQuantity = document.querySelectorAll(".itemQuantity");
-
+    
     for (let i = 0; i < newQuantity.length; i++){
 
         newQuantity[i].addEventListener("mouseenter", (e) => { // Get the displayed quantity value to increment or decrement.
@@ -150,51 +142,48 @@ function modifyQuantity() {
 
         newQuantity[i].addEventListener("change", (e) => {  //Select element to modify according to its id and its color.
             e.preventDefault();
+
             if(newQuantity[i].value <= 0 || newQuantity[i].value > 100) { // Don't allow numbers outside the range 1-100.
                 alert("Saissez un chiffre compris entre 1 et 100 !")
             } else if(newQuantity[i].value >= 1 || newQuantity[i].value <= 100) {
-                // let displayQuantity = getCart[i].quantity; 
                 let productColor = getCart[i].color;
                 let productId = getCart[i].id;
                 let newQuantityValue = newQuantity[i].valueAsNumber;
                 let displayQuantity = newQuantity[i].previousElementSibling;
                 const foundProduct = getCart.find(p => p.color == productColor && p.id == productId);
                 foundProduct.quantity = newQuantityValue; // The value of the new quantity is assigned to the one in the local storage.
-                displayQuantity.textContent = newQuantityValue; // The value of the new quantity entered is assigned to the displayed quantity.
-                // Hide some items like price to avoid keeping them in local storage.
-                for(let product of getCart) {
-                    delete product.price;
-                    delete product.imageUrl;
-                    delete product.altTxt;
-                    delete product.heading;
-                };
+                displayQuantity.textContent = newQuantityValue; // The value of the new quantity entered is assigned to the displayed quantity.  
             };
+
+            totalQuantity();  
+            totalPrice();           
             saveCart();
         });
     }; 
 };
 
 // Deleting products from the cart.
-function deleteProduct() {
+function removeProduct() {
+
     let deleteButton = document.querySelectorAll(".deleteItem");
-    for (let j = 0; j < deleteButton.length; j++){
+    
+    for (let j = 0; j < deleteButton.length; j++) {
+
         deleteButton[j].addEventListener("click", (e) => { //Select element to delete according to its id and its color.
             e.preventDefault();            
             let idToDelete = getCart[j].id;
+                console.log(idToDelete);
             let colorToDelete = getCart[j].color;
-            getCart = getCart.filter(p => p.id !== idToDelete || p.color !== colorToDelete);
-            // Hide some items like price to avoid keeping them in local storage.
-            for(let product of getCart) {
-                delete product.price;
-                delete product.imageUrl;
-                delete product.altTxt;
-                delete product.heading;
-            };
+                console.log(colorToDelete);
+            getCart = getCart.filter(p => p.id == idToDelete && p.color !== colorToDelete || p.id !== idToDelete && p.color !== colorToDelete);
+                console.log(getCart);
+            
+            totalQuantity();  
+            totalPrice(); 
             saveCart();
-            alert("Produit supprimé du panier !");
             location.reload();
-        })
-    }
+        });
+    };  
 };
 
 // Save items with new quantities into local storage.
@@ -310,7 +299,7 @@ email.addEventListener("input", function(e) {
 const sendOrder = document.getElementById("order");
 sendOrder.addEventListener("click", (e) => {
     e.preventDefault(); 
-    if(getCart == null || getCart == 0 || cartDetails == []) {   // Check if there are products in the basket before order validation.
+    if(getCart == null || getCart == 0) {   // Check if there are products in the basket before order validation.
         alert("Merci d'ajouter au moins un produit dans le panier !");
     } else {   
         const productsId = [];      // Retrieve in an array the IDs of products saved in local storage.
