@@ -15,6 +15,7 @@ function requestApi() {
             })
             .then(function(productApi) {  
                 displayProducts(product, productApi);
+                totalPrice(productApi);
             })
             .catch((err) => {
                 console.log("Une erreur est survenue lors de la requête de l'api :" + err);
@@ -99,8 +100,7 @@ function displayProducts(product, productApi) {
         product.addEventListener("click", removeProduct);
     };
 
-    modifyQuantity();
-    totalPrice(productApi);
+    modifyQuantity(productApi);
 };
 
 // Calculation of the total number of products.
@@ -126,7 +126,7 @@ function totalPrice(productApi) {
 };
 
 // Modify the quantity of products.
-function modifyQuantity() {
+function modifyQuantity(productApi) {
     
     let newQuantity = document.querySelectorAll(".itemQuantity");
     
@@ -156,11 +156,14 @@ function modifyQuantity() {
                 displayQuantity.textContent = newQuantityValue; // The value of the new quantity entered is assigned to the displayed quantity.  
             };
 
+            totalPrice(productApi);
             totalQuantity();             
             saveCart();
         });
     }; 
 };
+
+
 
 // Deleting products from the cart.
 function removeProduct(e) {  
