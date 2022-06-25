@@ -17,7 +17,7 @@ function requestApi() {
                 displayProducts(product, productApi);
             })
             .catch((err) => {
-                alert("Une erreur est survenue lors de la requête de l'api :" + err);
+                console.log("Une erreur est survenue lors de la requête de l'api :" + err);
             });
         };
     };
@@ -26,7 +26,7 @@ requestApi();
 
 // Display products present in the cart.
 function displayProducts(product, productApi) {
-
+    
     let displayCart = document.getElementById("cart__items");
 
     let productDisplay = document.createElement("article");
@@ -100,6 +100,7 @@ function displayProducts(product, productApi) {
     };
 
     modifyQuantity();
+    totalPrice(productApi);
 };
 
 // Calculation of the total number of products.
@@ -114,27 +115,15 @@ function totalQuantity() {
 totalQuantity();
 
 // Calculation of the total price of the products.
-function totalPrice() {
-
+function totalPrice(productApi) {
+    
     let totalPrice = document.getElementById("totalPrice");
     let displayAmount = 0;
     for(let product of getCart) {
-        fetch(`http://localhost:3000/api/products/${product.id}`)
-        .then(function(res) {
-            if (res.ok) {
-                return res.json();
-            }
-        })
-        .then(function(productApi) { 
-            displayAmount  += product.quantity * productApi.price;
-            totalPrice.textContent = displayAmount;
-        })
-        .catch((err) => {
-            alert("Une erreur est survenue lors de la requête de l'api :" + err);
-        });
+        displayAmount  += product.quantity * productApi.price;
+        totalPrice.textContent = displayAmount;
     };
 };
-totalPrice();
 
 // Modify the quantity of products.
 function modifyQuantity() {
@@ -154,22 +143,20 @@ function modifyQuantity() {
         });
 
         newQuantity[i].addEventListener("change", (e) => {  //Select element to modify according to its id and its color.
-            e.preventDefault();
+            e.preventDefault();  
 
             if(newQuantity[i].value <= 0 || newQuantity[i].value > 100) { // Don't allow numbers outside the range 1-100.
                 alert("Saissez un chiffre compris entre 1 et 100 !");
-            } else if(newQuantity[i].value >= 1 || newQuantity[i].value <= 100) {
-                let productColor = getCart[i].color;
-                let productId = getCart[i].id;
+            } else if(newQuantity[i].value >= 1 || newQuantity[i].value <= 100) {                
+                let modifyQuantity = e.target.closest("article");
                 let newQuantityValue = newQuantity[i].valueAsNumber;
                 let displayQuantity = newQuantity[i].previousElementSibling;
-                const foundProduct = getCart.find(p => p.color == productColor && p.id == productId);
+                const foundProduct = getCart.find(product => product.id == modifyQuantity.dataset.id && product.color == modifyQuantity.dataset.color);
                 foundProduct.quantity = newQuantityValue; // The value of the new quantity is assigned to the one in the local storage.
                 displayQuantity.textContent = newQuantityValue; // The value of the new quantity entered is assigned to the displayed quantity.  
             };
 
-            totalQuantity();  
-            totalPrice();           
+            totalQuantity();             
             saveCart();
         });
     }; 
@@ -185,10 +172,9 @@ function removeProduct(e) {
         || product.id == deleted.dataset.id && product.color !== deleted.dataset.color); 
     
     saveCart(); 
-    totalQuantity();  
-    totalPrice();   
-    location.reload(); 
-    alert("Produit retiré du panier !")    
+    totalQuantity();      
+    alert("Produit retiré du panier !")
+    location.reload();    
 };
 
 // Save items with new quantities into local storage.
